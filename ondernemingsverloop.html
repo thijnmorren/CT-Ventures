@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Stappenplan — AI Automatisering Bedrijf</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#faf9f7;color:#1a1816;font-size:15px;line-height:1.6;padding:32px 20px 80px}
+.wrap{max-width:740px;margin:0 auto}
+.page-header{margin-bottom:40px}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#4a8c62;margin-bottom:10px}
+h1{font-size:clamp(26px,4vw,36px);font-weight:700;color:#1a1816;margin-bottom:10px}
+.subtitle{font-size:15px;color:#4a4845;max-width:500px}
+.phase{margin-bottom:14px;border:1px solid #dedad4;border-radius:12px;overflow:hidden;background:white}
+.phase-header{display:flex;align-items:center;gap:12px;padding:16px 20px;cursor:pointer;user-select:none;transition:background .15s}
+.phase-header:hover{background:#f5f3ef}
+.phase-badge{font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;white-space:nowrap;flex-shrink:0}
+.phase-title{font-size:15px;font-weight:600;color:#1a1816;flex:1}
+.phase-meta{font-size:12px;color:#8a8885;white-space:nowrap}
+.chevron{font-size:16px;color:#8a8885;transition:transform .2s;flex-shrink:0}
+.phase.open .chevron{transform:rotate(180deg)}
+.phase-body{display:none;border-top:1px solid #dedad4;padding:0 20px 16px}
+.phase.open .phase-body{display:block}
+.steps{list-style:none;margin-top:12px}
+.step{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid #f0ede8;align-items:flex-start}
+.step:last-child{border-bottom:none}
+.step-num{font-size:11px;font-weight:600;min-width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px}
+.step-title{font-size:14px;font-weight:600;color:#1a1816;margin-bottom:3px}
+.step-desc{font-size:13px;color:#4a4845;line-height:1.6}
+.step-tag{display:inline-block;font-size:11px;font-weight:500;padding:2px 8px;border-radius:4px;margin-top:6px}
+.p1 .phase-badge,.p1 .step-num{background:#eeedfe;color:#3c3489}
+.p2 .phase-badge,.p2 .step-num{background:#e1f5ee;color:#085041}
+.p3 .phase-badge,.p3 .step-num{background:#faeeda;color:#633806}
+.p4 .phase-badge,.p4 .step-num{background:#faece7;color:#4a1b0c}
+.tag-legal{background:#eeedfe;color:#3c3489}
+.tag-tech{background:#e1f5ee;color:#085041}
+.tag-sales{background:#faeeda;color:#633806}
+.tag-ops{background:#faece7;color:#4a1b0c}
+.tag-growth{background:#eaf3de;color:#27500a}
+.tag-financieel{background:#fdf0ea;color:#7a3010}
+.tag-merk{background:#f0ecfe;color:#4a3090}
+.tag-data{background:#e5f5fa;color:#0a4a5e}
+.footer{margin-top:32px;padding-top:20px;border-top:1px solid #dedad4;font-size:12px;color:#8a8885}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="page-header">
+  <div class="eyebrow">Intern stappenplan</div>
+  <h1>Van idee naar schaalbaar AI-bedrijf</h1>
+  <p class="subtitle">Ons plan om het bedrijf op te bouwen. Klik op een fase om de stappen uit te klappen.</p>
+</div>
+<div id="plan"></div>
+<div class="footer">Bewaar dit bestand in jullie gedeelde GitHub-map om het bij te houden.</div>
+</div>
+<script>
+// ================================================================
+//  DATA — DIT IS HET ENIGE WAT JE HOEFT TE BEWERKEN
+//  Voeg een fase toe door een nieuw object te kopiëren in FASES.
+//  Voeg een stap toe door een object te kopiëren in stappen[].
+//  Tags: legal / tech / sales / ops / growth / financieel / merk / data
+// ================================================================
+const FASES = [
+  {
+    id:"p1", label:"Fase 1", titel:"Fundament leggen — jullie zelf", periode:"Week 1–4",
+    stappen:[
+      {nr:1,titel:"Inschrijven KvK & rechtsvorm kiezen",desc:"Kies een VOF (snel, goedkoop, samen) of BV (meer bescherming, hogere kosten). Maak een samenwerkingsovereenkomst: winstverdeling, wat als één van jullie wil stoppen, eigendom van het product.",tag:"legal",tagLabel:"Juridisch"},
+      {nr:2,titel:"Financiën regelen",desc:"Zakelijke bankrekening openen. Bepaal jullie minimale maandkosten (levensonderhoud + tools). Zorg dat jullie samen minimaal 3–6 maanden runway hebben voordat je de eerste klant benadert.",tag:"financieel",tagLabel:"Financieel"},
+      {nr:3,titel:"Je eigen AI-toolkit meester worden",desc:"Bepaal met welke tools jullie werken: Claude/GPT API, Make.com of n8n (automatisering), Zapier (eenvoudiger), eventueel custom code. Bouw een aantal oefenprojecten zodat je vlot wordt in het identificeren én oplossen van problemen.",tag:"tech",tagLabel:"Tech"},
+      {nr:4,titel:"Naam, uitstraling & simpele online aanwezigheid",desc:"Kies een bedrijfsnaam. Maak een simpele website (één pagina is genoeg): wat doen jullie, voor wie, hoe nemen ze contact op. Geen uitgebreide portfolio nodig in het begin. LinkedIn-profiel per persoon up-to-date.",tag:"merk",tagLabel:"Merk"},
+      {nr:5,titel:"Doelgroep scherp definiëren",desc:"Kies één sector om mee te beginnen, bijv. ambachtelijke dienstverleners (loodgieters, schilders, elektriciens) of lokale retailers. Hoe specifieker, hoe makkelijker je pitch en hoe sneller je herhalende problemen ontdekt.",tag:"sales",tagLabel:"Strategie"},
+      {nr:6,titel:"Rolverdeling & werkafspraken",desc:"Bepaal wie verantwoordelijk is voor klantcontact/sales en wie voor het bouwen. Stel een wekelijks ritme in: bijv. maandagochtend afstemmen, vrijdag review. Gebruik een simpel kanban-bord (Notion of Trello).",tag:"ops",tagLabel:"Organisatie"}
+    ]
+  },
+  {
+    id:"p2", label:"Fase 2", titel:"Markt instappen — eerste klanten", periode:"Week 4–12",
+    stappen:[
+      {nr:7,titel:"Probleeminterviews uitvoeren (vóór verkopen)",desc:"Benader 10–15 zzp'ers/mkb'ers puur om te luisteren. Geen pitch, geen product. Stel vragen: 'Waar verlies je de meeste tijd?' en 'Wat doe je nu om dat op te lossen?' Dit geeft je de echte pijnpunten en het juiste taalgebruik voor je pitch.",tag:"sales",tagLabel:"Onderzoek"},
+      {nr:8,titel:"Eerste klant benaderen via warm netwerk",desc:"Begin bij mensen die jullie al kennen of via via kennen. De eerste klant hoef je niet te verkopen op AI, maar op tijdbesparing. 'Hoeveel uur kost dit je per week? Wil je dat we proberen dat te halveren?'",tag:"sales",tagLabel:"Sales"},
+      {nr:9,titel:"Intake & diagnose proces opzetten",desc:"Maak een vast template voor je eerste gesprek met een klant: welke vragen stel je, hoe breng je hun huidige werkproces in kaart, hoe schat je de tijdswinst in. Dit wordt je standaard intake-methode voor elke nieuwe klant.",tag:"ops",tagLabel:"Proces"},
+      {nr:10,titel:"Prijsstrategie bepalen",desc:"Kies een aanpak: vaste prijs per project, maandelijks retainer, of op basis van tijdsbesparing. Voor de eerste klanten: wees goedkoop en vraag om een testimonial en doorverwijzingen in ruil.",tag:"financieel",tagLabel:"Financieel"},
+      {nr:11,titel:"Eerste oplossing bouwen & leveren",desc:"Houd de scope klein en meetbaar. Bouw een MVP-oplossing in 1–2 weken. Lever op, meet het resultaat ('voor: 5 uur/week, na: 30 min'), en documenteer het proces voor intern gebruik.",tag:"tech",tagLabel:"Bouwen"},
+      {nr:12,titel:"Feedback ophalen & case study maken",desc:"Na levering: vraag de klant om hun ervaring te delen in een korte quote of video. Maak een één-pager case study: probleem, oplossing, resultaat. Dit is je sterkste verkooptool voor de volgende klant.",tag:"merk",tagLabel:"Merk"}
+    ]
+  },
+  {
+    id:"p3", label:"Fase 3", titel:"Patroon herkennen & opschalen", periode:"Maand 3–9",
+    stappen:[
+      {nr:13,titel:"Problemenlog bijhouden",desc:"Na elke klantintake: noteer het kernprobleem, de sector, hoe lang de oplossing duurde te bouwen en hoe waardevol het was. Na 10–15 klanten zie je welk probleem het vaakst voorkomt én de meeste waarde oplevert.",tag:"data",tagLabel:"Data"},
+      {nr:14,titel:"Sales-kanaal uitbouwen",desc:"Zet een actief verwijzingsnetwerk op: vraag tevreden klanten om één naam door te sturen. Overweeg partnerschappen met boekhouders, webdesigners of brancheverenigingen die al toegang hebben tot zzp'ers.",tag:"sales",tagLabel:"Sales"},
+      {nr:15,titel:"Herbruikbare bouwblokken maken",desc:"Terwijl je maatwerk bouwt, extraheer je steeds de generieke onderdelen: een offerte-generator prompt-template, een e-mailclassificatie-flow, een agendaplannings-module. Dit verkort de bouwtijd per klant aanzienlijk.",tag:"tech",tagLabel:"Tech"},
+      {nr:16,titel:"Het winnende probleem kiezen",desc:"Op basis van je log: kies het probleem dat (a) het vaakst voorkomt, (b) sector-onafhankelijk is, en (c) meetbaar op te lossen is. Valideer dit met 3–5 potentiële gebruikers vóórdat je begint met bouwen.",tag:"ops",tagLabel:"Strategie"},
+      {nr:17,titel:"Productvisie & roadmap opstellen",desc:"Beschrijf in één pagina: wat doet het product, wie is de exacte gebruiker, wat is de kern-use-case en wat is de prijs. Maak een roadmap: v0.1 (intern gebruik), v0.5 (bèta met 5 klanten), v1.0 (launch).",tag:"ops",tagLabel:"Strategie"}
+    ]
+  },
+  {
+    id:"p4", label:"Fase 4", titel:"Van maatwerk naar product", periode:"Maand 6–18",
+    stappen:[
+      {nr:18,titel:"Bèta-product bouwen",desc:"Bouw de v0.5 met je bestaande bouwblokken. Maak het bruikbaar door een niet-technische zzp'er: simpele UI, weinig instellingen, duidelijke output. Gebruik bestaande klanten als bèta-testers.",tag:"tech",tagLabel:"Bouwen"},
+      {nr:19,titel:"Pricing & businessmodel bepalen",desc:"Kies een SaaS-model: bijv. 29–79 euro/maand per gebruiker. Zet een gratis proefperiode in (14 dagen) zodat de drempel laag is. Zorg voor automatische facturering via Stripe of Mollie.",tag:"financieel",tagLabel:"Financieel"},
+      {nr:20,titel:"Lancering & eerste betalende productklanten",desc:"Stuur je bestaande klanten en netwerk een persoonlijk bericht. Zet een simpele waitlist-pagina live. Doel: 10 betalende klanten binnen 60 dagen na lancering.",tag:"growth",tagLabel:"Groei"},
+      {nr:21,titel:"Maatwerk afbouwen, product opschalen",desc:"Zodra het product stabiel inkomsten genereert: stop met nieuwe maatwerkklanten aannemen. Richt alle energie op productontwikkeling, klantsupport en groei. Dit is het moment waarop jullie locatie-onafhankelijk kunnen gaan werken.",tag:"growth",tagLabel:"Groei"}
+    ]
+  }
+];
+
+const plan=document.getElementById('plan');
+FASES.forEach((fase,fi)=>{
+  const div=document.createElement('div');
+  div.className='phase '+fase.id+(fi===0?' open':'');
+  div.innerHTML=`<div class="phase-header" onclick="toggle(this)">
+    <span class="phase-badge">${fase.label}</span>
+    <span class="phase-title">${fase.titel}</span>
+    <span class="phase-meta">${fase.periode}</span>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="phase-body"><ul class="steps">
+    ${fase.stappen.map(s=>`<li class="step">
+      <span class="step-num">${s.nr}</span>
+      <div><div class="step-title">${s.titel}</div>
+      <div class="step-desc">${s.desc}</div>
+      <span class="step-tag tag-${s.tag}">${s.tagLabel}</span></div>
+    </li>`).join('')}
+  </ul></div>`;
+  plan.appendChild(div);
+});
+
+function toggle(h){
+  const p=h.closest('.phase'),was=p.classList.contains('open');
+  document.querySelectorAll('.phase.open').forEach(x=>x.classList.remove('open'));
+  if(!was)p.classList.add('open');
+}
+</script>
+</body>
+</html>

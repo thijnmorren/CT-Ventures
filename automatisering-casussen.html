@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automatisering Casussen — Overzicht</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#faf9f7;color:#1a1816;font-size:15px;line-height:1.6;padding:32px 20px 80px}
+.wrap{max-width:740px;margin:0 auto}
+.page-header{margin-bottom:36px}
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#4a8c62;margin-bottom:10px}
+h1{font-size:clamp(24px,4vw,34px);font-weight:700;color:#1a1816;margin-bottom:10px}
+.subtitle{font-size:15px;color:#4a4845;max-width:520px}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:20px}
+.filter-btn{font-size:12px;font-weight:500;padding:6px 14px;border-radius:99px;border:1px solid #dedad4;background:white;color:#4a4845;cursor:pointer;transition:all .15s}
+.filter-btn:hover{border-color:#4a8c62;color:#2d5a3d}
+.filter-btn.active{border-color:transparent;color:white;background:#2d5a3d}
+.count{font-size:13px;color:#8a8885;margin-bottom:14px}
+.card{border:1px solid #dedad4;border-radius:12px;overflow:hidden;margin-bottom:12px;background:white;transition:opacity .2s}
+.card.hidden{display:none}
+.card-header{display:flex;align-items:center;gap:12px;padding:14px 18px;cursor:pointer;transition:background .15s}
+.card-header:hover{background:#f5f3ef}
+.cat-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.card-title{font-size:14px;font-weight:600;color:#1a1816;flex:1;line-height:1.3}
+.badges{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.diff-badge{font-size:11px;font-weight:500;padding:2px 8px;border-radius:4px}
+.diff-1{background:#e1f5ee;color:#085041}
+.diff-2{background:#faeeda;color:#633806}
+.diff-3{background:#faece7;color:#712b13}
+.time-save{font-size:12px;color:#8a8885;white-space:nowrap}
+.chevron{font-size:16px;color:#8a8885;transition:transform .2s;flex-shrink:0}
+.card.open .chevron{transform:rotate(180deg)}
+.card-body{display:none;padding:0 18px 18px;border-top:1px solid #dedad4}
+.card.open .card-body{display:block}
+.section-lbl{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:#8a8885;margin:14px 0 5px}
+.section-text{font-size:13px;color:#4a4845;line-height:1.6}
+.tools-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.tool{font-size:12px;padding:3px 9px;border-radius:6px;border:1px solid #dedad4;color:#4a4845;background:#f5f3ef}
+.tool.kern{background:#e1f5ee;border-color:#9ad4b4;color:#085041;font-weight:500}
+.skills-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.skill{font-size:12px;padding:3px 9px;border-radius:6px;background:#eaf3de;border:1px solid #a8cf7a;color:#27500a}
+.dot-offerte{background:#534AB7}
+.dot-email{background:#185FA5}
+.dot-admin{background:#0F6E56}
+.dot-planning{background:#854F0B}
+.dot-klant{background:#993C1D}
+.dot-marketing{background:#993556}
+.dot-data{background:#3B6D11}
+.footer{margin-top:32px;padding-top:20px;border-top:1px solid #dedad4;font-size:12px;color:#8a8885}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="page-header">
+  <div class="eyebrow">Referentiegids</div>
+  <h1>Automatisering casussen</h1>
+  <p class="subtitle">Alle automatiserings-mogelijkheden die wij kunnen aanbieden aan zzp'ers en mkb'ers. Filter op categorie, klik een casus open voor de details.</p>
+</div>
+
+<div class="filters" id="filters"></div>
+<div class="count" id="count-lbl"></div>
+<div id="grid"></div>
+<div class="footer">Voeg nieuwe casussen toe bovenin het JavaScript-blok van dit bestand.</div>
+</div>
+
+<script>
+// ================================================================
+//  DATA — DIT IS HET ENIGE WAT JE HOEFT TE BEWERKEN
+//  Voeg een nieuwe casus toe door een object te kopiëren in CASUSSEN.
+//  cat: offerte / email / admin / planning / klant / marketing / data
+//  diff: "Instapper" / "Middenniveau" / "Gevorderd"
+//  diffClass: "diff-1" / "diff-2" / "diff-3"
+// ================================================================
+const CATEGORIES = [
+  {id:"offerte", label:"Offertes & documenten"},
+  {id:"email",   label:"E-mail & communicatie"},
+  {id:"admin",   label:"Administratie"},
+  {id:"planning",label:"Planning & agenda"},
+  {id:"klant",   label:"Klantbeheer"},
+  {id:"marketing",label:"Marketing & content"},
+  {id:"data",    label:"Data & rapportage"}
+];
+
+const CASUSSEN = [
+  {
+    cat:"offerte", titel:"Offertes automatisch genereren",
+    diff:"Instapper", diffClass:"diff-1", tijdsbesparing:"2–5 uur/week",
+    probleem:"Loodgieters, elektriciens, schilders typen elke avond offertes over. Ze herhalen 80% van dezelfde tekst, maken rekenfouten en vergeten soms posten.",
+    oplossing:"Een formulier of chatflow waarbij de klant de details invult (werkzaamheden, adres, materialen). AI genereert direct een professionele PDF-offerte in de huisstijl van de ondernemer.",
+    tools:["Claude / GPT API","Make.com","Tally / Typeform","Google Docs API","Docupilot","PDF.co"],
+    kerntools:["Claude / GPT API","Make.com"],
+    skills:["Prompt engineering","Make.com flows","Document templating"]
+  },
+  {
+    cat:"offerte", titel:"Contracten & opdrachtbevestigingen opstellen",
+    diff:"Instapper", diffClass:"diff-1", tijdsbesparing:"1–2 uur/week",
+    probleem:"Freelancers en kleine bureaus schrijven elke keer handmatig een opdrachtbevestiging of contract. Dezelfde clausules, steeds opnieuw.",
+    oplossing:"Een template-systeem waarbij klantgegevens en projectdetails automatisch worden ingevuld in een standaard contract. Eventueel met e-handtekening koppeling.",
+    tools:["Claude / GPT API","Make.com","HelloSign / SignRequest","Notion / Google Docs"],
+    kerntools:["Make.com"],
+    skills:["Document templating","Webhook integraties"]
+  },
+  {
+    cat:"email", titel:"Klantvragen beantwoorden via e-mail of WhatsApp",
+    diff:"Middenniveau", diffClass:"diff-2", tijdsbesparing:"3–6 uur/week",
+    probleem:"Elke dag dezelfde vragen: 'Wat zijn jullie tarieven?', 'Hoe lang duurt dit?', 'Zijn jullie beschikbaar op datum X?' Kleine bedrijven missen reacties of reageren traag.",
+    oplossing:"Een AI-assistent die binnenkomende berichten leest, de vraag herkent en een concept-antwoord genereert — of bij simpele vragen direct antwoordt. De ondernemer hoeft alleen nog te fiatteren.",
+    tools:["Claude / GPT API","Make.com / n8n","Gmail API","WhatsApp Business API","Twilio"],
+    kerntools:["Claude / GPT API","Make.com / n8n"],
+    skills:["Prompt engineering","Gmail / WhatsApp API","Classificatie-logica"]
+  },
+  {
+    cat:"email", titel:"Follow-up e-mails na offertes of afspraken",
+    diff:"Instapper", diffClass:"diff-1", tijdsbesparing:"1–3 uur/week",
+    probleem:"Ondernemers sturen een offerte en vergeten daarna op te volgen. Leads gaan verloren puur door geen follow-up, niet door prijs of kwaliteit.",
+    oplossing:"Een geautomatiseerde reeks: 3 dagen na offerte een automatische vriendelijke herinnering, 7 dagen een tweede herinnering. Na 'ja' een welkomst e-mail. Na 'nee' een vraag om feedback.",
+    tools:["Make.com / Zapier","Claude / GPT API","Gmail / Outlook API","Airtable"],
+    kerntools:["Make.com / Zapier"],
+    skills:["Make.com flows","Tijdgestuurde triggers"]
+  },
+  {
+    cat:"email", titel:"Inkomende e-mails sorteren & samenvatten",
+    diff:"Instapper", diffClass:"diff-1", tijdsbesparing:"30–60 min/dag",
+    probleem:"Kleine bedrijven krijgen tientallen e-mails per dag. Veel tijd gaat op aan sorteren, prioriteren en doorlezen voordat je weet wat actie vereist.",
+    oplossing:"Elke ochtend een overzicht: AI leest alle nieuwe e-mails, categoriseert ze (klant, leverancier, spam, dringend) en stuurt een dagelijks briefing met een samenvatting per categorie.",
+    tools:["Claude / GPT API","Make.com / n8n","Gmail API","Slack / WhatsApp (output)"],
+    kerntools:["Claude / GPT API","Make.com"],
+    skills:["Classificatie-logica","Geplande triggers","Gmail API"]
+  },
+  {
+    cat:"admin", titel:"Facturen automatisch verwerken & boeken",
+    diff:"Middenniveau", diffClass:"diff-2", tijdsbesparing:"2–4 uur/week",
+    probleem:"Facturen komen binnen per e-mail als PDF. De ondernemer opent ze één voor één, leest bedragen en leveranciersnamen af en typt ze over in een boekhoudprogramma.",
+    oplossing:"Een flow die binnenkomende factuur-e-mails oppikt, de PDF uitleest met AI (bedrag, datum, leverancier, BTW), en de gegevens automatisch boekt in het boekhoudpakket van de klant.",
+    tools:["Claude Vision / GPT-4o","Make.com / n8n","Moneybird / Exact API","Google Drive","Mindee (OCR)"],
+    kerntools:["Claude Vision / GPT-4o","Make.com / n8n"],
+    skills:["Vision / document AI","Boekhoud-API's","OCR-verwerking"]
+  },
+  {
+    cat:"admin", titel:"Urenstaten & tijdregistratie verwerken",
+    diff:"Instapper", diffClass:"diff-1", tijdsbesparing:"1–2 uur/week",
+    probleem:"Zzp'ers vergeten uren bij te houden of doen het eens per week handmatig vanuit geheugen. Leidt tot fouten in facturatie en belasting-aangiftes.",
+    oplossing:"Een simpele WhatsApp-interface: de ondernemer stuurt '9-12 website klant X' en het systeem logt automatisch de uren in een spreadsheet of tijdregistratietool.",
+    tools:["Claude / GPT API","Make.com","Twilio / WhatsApp API","Google Sheets","Toggl API"],
+    kerntools:["Claude / GPT API","Make.com"],
+    skills:["Intentherkenning (NLP)","Google Sheets API","WhatsApp Business API"]
+  },
+  {
+    cat:"admin", titel:"Automatisch facturen aanmaken vanuit geleverde dienst",
+    diff:"Instapper", diffClass:"diff-1", tijdsbesparing:"1–3 uur/week",
+    probleem:"Na het afronden van een klus moet de ondernemer zelf een factuur aanmaken: klantgegevens opzoeken, bedrag berekenen, PDF exporteren en mailen. Dit kost 15–30 minuten per factuur.",
+    oplossing:"Zodra een klus als 'afgerond' wordt gemarkeerd, maakt het systeem automatisch de factuur aan, verstuurt die naar de klant en zet hem in het boekhoudpakket.",
+    tools:["Make.com","Moneybird / Exact / Twinfield","Google Calendar trigger","Airtable / Notion"],
+    kerntools:["Make.com"],
+    skills:["Boekhoud-API's","Trigger-gebaseerde flows"]
+  },
+  {
+    cat:"admin", titel:"BTW-aangifte voorbereiding automatiseren",
+    diff:"Middenniveau", diffClass:"diff-2", tijdsbesparing:"2–4 uur/kwartaal",
+    probleem:"Elk kwartaal moeten zzp'ers hun BTW-aangifte voorbereiden: alle bonnen en facturen doorlopen, BTW-bedragen optellen en categoriseren. Foutgevoelig en tijdrovend.",
+    oplossing:"Een systeem dat gedurende het kwartaal automatisch binnenkomende facturen en bonnetjes (foto's via WhatsApp) verwerkt, BTW-bedragen extraheert en een kant-en-klaar kwartaaloverzicht genereert.",
+    tools:["Claude Vision / GPT-4o","Make.com","WhatsApp Business API","Google Sheets","Mindee (OCR)"],
+    kerntools:["Claude Vision / GPT-4o"],
+    skills:["Vision AI / OCR","Financiële extractie","Spreadsheet-output"]
+  },
+  {
+    cat:"planning", titel:"Afspraken automatisch inplannen",
+    diff:"Instapper", diffClass:"diff-1", tijdsbesparing:"1–2 uur/week",
+    probleem:"Heen-en-weer e-mailen om een afspraak te vinden: 'Maandag?' - 'Nee, dinsdag?' - 'Woensdagmiddag?' Dit kost beide partijen 10–20 minuten per afspraak.",
+    oplossing:"Een boekingspagina gekoppeld aan de agenda van de ondernemer. Klanten kiezen zelf een vrij tijdslot. Systeem stuurt automatisch bevestiging, herinnering en een intake-formulier.",
+    tools:["Calendly / Cal.com","Make.com","Google Calendar API","Twilio (SMS herinnering)"],
+    kerntools:["Calendly / Cal.com","Make.com"],
+    skills:["Agenda-API's","Webhook integraties"]
+  },
+  {
+    cat:"planning", titel:"Werkplanning & routeoptimalisatie",
+    diff:"Gevorderd", diffClass:"diff-3", tijdsbesparing:"3–5 uur/week",
+    probleem:"Bedrijven met buitendienstmedewerkers (thuiszorg, monteurs, bezorgers) plannen handmatig wie welke klant bezoekt. Inefficiënte routes kosten uren per dag aan extra rijtijd.",
+    oplossing:"Een systeem dat dagelijkse klantadressen inleest, een optimale volgorde berekent per medewerker en de geplande route exporteert naar Google Maps of de agenda van elke medewerker.",
+    tools:["Google Maps / Route4Me API","Make.com / Python","Google Sheets (invoer)","Claude API (uitleg)"],
+    kerntools:["Google Maps / Route4Me API"],
+    skills:["Maps API","Basisscripting (Python)","Algoritme-logica"]
+  },
+  {
+    cat:"planning", titel:"Herinneringen & no-show preventie",
+    diff:"Instapper", diffClass:"diff-1", tijdsbesparing:"1–2 uur/week",
+    probleem:"Kappers, fysiotherapeuten en coaches hebben tot 15–20% no-show. Elke gemiste afspraak kost direct omzet. Handmatig iedereen bellen is tijdrovend.",
+    oplossing:"Geautomatiseerde herinneringsstroom: 48 uur van tevoren SMS, 2 uur van tevoren WhatsApp. Klant kan direct bevestigen of annuleren. Bij annulering stuurt het systeem automatisch een herboekingsverzoek.",
+    tools:["Make.com / Zapier","Twilio / MessageBird","Google Calendar / Calendly","WhatsApp Business API"],
+    kerntools:["Make.com / Zapier","Twilio / MessageBird"],
+    skills:["SMS/WhatsApp API","Tijdgestuurde triggers"]
+  },
+  {
+    cat:"klant", titel:"Klantonboarding automatiseren",
+    diff:"Middenniveau", diffClass:"diff-2", tijdsbesparing:"2–4 uur/week",
+    probleem:"Na 'ja' van een nieuwe klant stuurt de ondernemer handmatig: welkomstmail, intake-formulier, factuur, contract, planning. Elk een apart taakje dat vergeten kan worden.",
+    oplossing:"Zodra een klant 'akkoord' geeft, wordt automatisch een reeks acties gestart: welkomstmail, contract ter ondertekening, eerste factuur, aanmaken in CRM en toevoegen aan agenda.",
+    tools:["Make.com","Claude API","HubSpot Free / Pipedrive","HelloSign","Moneybird"],
+    kerntools:["Make.com"],
+    skills:["Multi-step flows","CRM-integraties","Webhook triggers"]
+  },
+  {
+    cat:"klant", titel:"Chatbot voor veelgestelde vragen op website",
+    diff:"Middenniveau", diffClass:"diff-2", tijdsbesparing:"1–3 uur/dag",
+    probleem:"Kleine bedrijven beantwoorden elke dag dezelfde basisvragen van websitebezoekers: openingstijden, tarieven, werkgebied, levertijden. Dit onderbreekt de werkdag constant.",
+    oplossing:"Een op maat gemaakte chatbot op de website die de specifieke vragen van dat bedrijf kent. Gevoed door hun FAQ, prijslijst en dienstverlening. Complexe vragen worden doorgestuurd naar de ondernemer.",
+    tools:["Claude API / GPT API","Voiceflow / Botpress","Relevance AI","Crisp / Tidio","Embeddings (RAG)"],
+    kerntools:["Claude API / GPT API"],
+    skills:["RAG (retrieval-augmented)","Chatbot bouwen","Website integratie"]
+  },
+  {
+    cat:"klant", titel:"Klanttevredenheid & reviews automatisch verzamelen",
+    diff:"Instapper", diffClass:"diff-1", tijdsbesparing:"1–2 uur/week",
+    probleem:"Tevreden klanten geven zelden spontaan een review. Ondernemers vergeten om het te vragen of voelen het ongemakkelijk. Slecht voor online zichtbaarheid en nieuwe klanten.",
+    oplossing:"Na afronden van een klus stuurt het systeem automatisch een persoonlijke 'hoe was het?' SMS of e-mail. Bij positieve reactie: direct doorsturen naar Google Reviews. Bij negatief: intern signaal voor de ondernemer.",
+    tools:["Make.com / Zapier","Twilio (SMS)","Google Business API","Typeform / Tally"],
+    kerntools:["Make.com / Zapier"],
+    skills:["Sentiment-analyse","Conditionele logica"]
+  },
+  {
+    cat:"marketing", titel:"Social media content genereren & plannen",
+    diff:"Instapper", diffClass:"diff-1", tijdsbesparing:"2–4 uur/week",
+    probleem:"Kleine bedrijven weten dat ze regelmatig moeten posten, maar verzinnen niet wat, hebben geen tijd en posten daardoor helemaal niets. Zichtbaarheid blijft achter.",
+    oplossing:"Een wekelijks content-systeem: ondernemer vult één keer in wat er die week is gebeurd. AI schrijft hieruit 3–5 posts in de toon van dat bedrijf, klaar om te plannen.",
+    tools:["Claude / GPT API","Make.com","Buffer / Later (plannen)","Airtable (content kalender)","Tally (invoerformulier)"],
+    kerntools:["Claude / GPT API","Make.com"],
+    skills:["Tone-of-voice prompting","Social media API's","Content planning"]
+  },
+  {
+    cat:"marketing", titel:"Gepersonaliseerde nieuwsbrief automatisch samenstellen",
+    diff:"Middenniveau", diffClass:"diff-2", tijdsbesparing:"2–3 uur/maand",
+    probleem:"Ondernemers met een klantenlijst willen regelmatig contact houden maar schrijven nooit een nieuwsbrief omdat het 'te veel werk' is.",
+    oplossing:"Elke maand haalt het systeem automatisch nieuwtjes op (nieuwe producten, afgeronde projecten, blog posts) en laat AI hiervan een leesbare nieuwsbrief maken. Ondernemer keurt goed, dan verzenden.",
+    tools:["Claude API","Make.com","Mailchimp / MailerLite","Airtable / Notion (bron)"],
+    kerntools:["Claude API","Make.com"],
+    skills:["E-mail API's","Content-samenvatting AI"]
+  },
+  {
+    cat:"marketing", titel:"Online reviews automatisch beantwoorden",
+    diff:"Instapper", diffClass:"diff-1", tijdsbesparing:"30–60 min/week",
+    probleem:"Google en Yelp reviews beantwoorden kost tijd en energie. Veel ondernemers negeren reviews, wat slecht is voor de algoritmes en de klantbeleving.",
+    oplossing:"Elke nieuwe review triggert automatisch een concept-antwoord in de stijl van het bedrijf. Bij positieve reviews direct klaarstaan. Bij negatieve: concept plus signaal aan de ondernemer.",
+    tools:["Claude / GPT API","Make.com","Google Business API","Slack (notificaties)"],
+    kerntools:["Claude / GPT API","Make.com"],
+    skills:["Sentiment-analyse","Tone-of-voice prompting"]
+  },
+  {
+    cat:"data", titel:"Weekrapportages automatisch samenstellen",
+    diff:"Middenniveau", diffClass:"diff-2", tijdsbesparing:"2–3 uur/week",
+    probleem:"Kleine bedrijven met meerdere medewerkers of vestigingen hebben geen zicht op wat er die week is gedaan, verkocht of gefactureerd tenzij ze alles handmatig bij elkaar zoeken.",
+    oplossing:"Elke vrijdag haalt het systeem data op uit meerdere bronnen (agenda, boekhoudpakket, CRM), laat AI hier een leesbaar wekelijks overzicht van maken en stuurt dit naar de eigenaar.",
+    tools:["Claude / GPT API","Make.com / n8n","Google Sheets / Airtable","Moneybird API","Slack / E-mail (output)"],
+    kerntools:["Claude / GPT API","Make.com / n8n"],
+    skills:["Data-aggregatie","Meerdere API's combineren","Samenvatting-AI"]
+  },
+  {
+    cat:"data", titel:"Voorraad- of inkoop-signalering",
+    diff:"Middenniveau", diffClass:"diff-2", tijdsbesparing:"1–3 uur/week",
+    probleem:"Kleine webshops en detailhandelaren lopen regelmatig door voorraad heen of bestellen te laat bij. Dit leidt tot gemiste omzet of te hoge voorraadkosten.",
+    oplossing:"Een systeem dat dagelijks de voorraadniveaus controleert. Zodra een product onder een drempel zakt, stuurt het automatisch een besteladvies of plaatst het een inkooporder bij de leverancier.",
+    tools:["Make.com / n8n","WooCommerce / Shopify API","Google Sheets","E-mail / Slack alert"],
+    kerntools:["Make.com / n8n"],
+    skills:["E-commerce API's","Drempelwaarde-logica","Geplande triggers"]
+  },
+  {
+    cat:"data", titel:"Formulierinvoer verwerken & doorsturen",
+    diff:"Instapper", diffClass:"diff-1", tijdsbesparing:"1–2 uur/week",
+    probleem:"Contactformulieren en aanvraagformulieren belanden als een rommelige e-mail in de inbox. De ondernemer moet de data handmatig overtypen naar een spreadsheet of CRM.",
+    oplossing:"Elke formulierinzending triggert automatisch het aanmaken van een record in het CRM, een notificatie naar de juiste persoon, en een gepersonaliseerde bevestigingsmail naar de inzender.",
+    tools:["Make.com / Zapier","Tally / Typeform / JotForm","Airtable / HubSpot","Claude API (bevestigingsmail)"],
+    kerntools:["Make.com / Zapier"],
+    skills:["Webhook triggers","CRM-integraties"]
+  }
+];
+
+// ================================================================
+//  RENDERER — hoef je niet aan te komen
+// ================================================================
+const DOT_CLASS = {offerte:"dot-offerte",email:"dot-email",admin:"dot-admin",planning:"dot-planning",klant:"dot-klant",marketing:"dot-marketing",data:"dot-data"};
+
+// Filters opbouwen
+const filtersEl = document.getElementById('filters');
+const allBtn = document.createElement('button');
+allBtn.className='filter-btn active'; allBtn.dataset.cat='all'; allBtn.textContent='Alle casussen';
+allBtn.addEventListener('click',()=>filterOp('all',allBtn));
+filtersEl.appendChild(allBtn);
+CATEGORIES.forEach(c=>{
+  const b=document.createElement('button');
+  b.className='filter-btn'; b.dataset.cat=c.id; b.textContent=c.label;
+  b.addEventListener('click',()=>filterOp(c.id,b));
+  filtersEl.appendChild(b);
+});
+
+// Casussen renderen
+const grid=document.getElementById('grid');
+CASUSSEN.forEach((c,i)=>{
+  const kernSet=new Set(c.kerntools||[]);
+  const card=document.createElement('div');
+  card.className='card'; card.dataset.cat=c.cat;
+  card.innerHTML=`<div class="card-header" onclick="toggle(this)">
+    <span class="cat-dot ${DOT_CLASS[c.cat]||''}"></span>
+    <span class="card-title">${c.titel}</span>
+    <div class="badges">
+      <span class="diff-badge ${c.diffClass}">${c.diff}</span>
+      <span class="time-save">${c.tijdsbesparing}</span>
+    </div>
+    <span class="chevron">&#8964;</span>
+  </div>
+  <div class="card-body">
+    <div class="section-lbl">Het probleem</div>
+    <div class="section-text">${c.probleem}</div>
+    <div class="section-lbl">De oplossing</div>
+    <div class="section-text">${c.oplossing}</div>
+    <div class="section-lbl">Tools</div>
+    <div class="tools-row">${(c.tools||[]).map(t=>`<span class="tool${kernSet.has(t)?' kern':''}">${t}</span>`).join('')}</div>
+    <div class="section-lbl">Skills om te leren</div>
+    <div class="skills-row">${(c.skills||[]).map(s=>`<span class="skill">${s}</span>`).join('')}</div>
+  </div>`;
+  grid.appendChild(card);
+});
+
+updateCount();
+
+function filterOp(cat,btn){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.card').forEach(card=>{
+    card.classList.toggle('hidden', cat!=='all' && card.dataset.cat!==cat);
+  });
+  updateCount();
+}
+
+function updateCount(){
+  const zichtbaar=document.querySelectorAll('.card:not(.hidden)').length;
+  document.getElementById('count-lbl').textContent=zichtbaar+' casus'+(zichtbaar===1?'':'sen');
+}
+
+function toggle(h){
+  const c=h.closest('.card');
+  c.classList.toggle('open');
+}
+</script>
+</body>
+</html>
