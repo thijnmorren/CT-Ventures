@@ -1,0 +1,1163 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Automatisering Intake — AI Scan</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1816;
+  --ink2: #4a4845;
+  --ink3: #8a8885;
+  --paper: #faf9f7;
+  --paper2: #f2f0ec;
+  --paper3: #e8e5df;
+  --accent: #2d5a3d;
+  --accent2: #4a8c62;
+  --accent-light: #e8f2eb;
+  --warn: #b84c1a;
+  --warn-light: #fdf0ea;
+  --border: #dedad4;
+  --radius: 10px;
+  --radius-lg: 16px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  min-height: 100vh;
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+/* LAYOUT */
+.shell {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+/* HEADER */
+.header {
+  margin-bottom: 48px;
+}
+.header-eyebrow {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 10px;
+}
+.header h1 {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(28px, 5vw, 40px);
+  font-weight: 400;
+  color: var(--ink);
+  line-height: 1.15;
+  margin-bottom: 14px;
+}
+.header p {
+  font-size: 15px;
+  color: var(--ink2);
+  max-width: 520px;
+  line-height: 1.7;
+}
+
+/* PROGRESS */
+.progress-wrap {
+  margin-bottom: 40px;
+}
+.progress-steps {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.progress-step {
+  flex: 1;
+  height: 3px;
+  background: var(--paper3);
+  border-radius: 99px;
+  transition: background .3s;
+}
+.progress-step.done { background: var(--accent2); }
+.progress-step.active { background: var(--accent); }
+.progress-label {
+  font-size: 12px;
+  color: var(--ink3);
+}
+.progress-label span { color: var(--ink2); font-weight: 500; }
+
+/* STAP BLOK */
+.stap {
+  display: none;
+}
+.stap.active {
+  display: block;
+  animation: fadeUp .25s ease;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.stap-header {
+  margin-bottom: 28px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+.stap-nummer {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--accent2);
+  margin-bottom: 6px;
+}
+.stap-header h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.stap-header p {
+  font-size: 14px;
+  color: var(--ink3);
+}
+
+/* VRAGEN */
+.vraag {
+  margin-bottom: 24px;
+}
+.vraag label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.vraag .hint {
+  font-size: 12px;
+  color: var(--ink3);
+  font-weight: 400;
+  display: block;
+  margin-top: -4px;
+  margin-bottom: 8px;
+}
+
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: white;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  transition: border-color .15s;
+  -webkit-appearance: none;
+}
+input[type="text"]:focus,
+input[type="number"]:focus,
+textarea:focus,
+select:focus { border-color: var(--accent2); }
+textarea { resize: vertical; min-height: 80px; }
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8885' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+/* CHIPS */
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.chip {
+  padding: 7px 14px;
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: 13px;
+  color: var(--ink2);
+  cursor: pointer;
+  background: white;
+  transition: all .15s;
+  user-select: none;
+}
+.chip:hover { border-color: var(--accent2); color: var(--accent); }
+.chip.selected {
+  background: var(--accent-light);
+  border-color: var(--accent2);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* SCHAAL KNOPPEN */
+.schaal {
+  display: flex;
+  gap: 6px;
+}
+.schaal-btn {
+  flex: 1;
+  padding: 10px 6px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-size: 12px;
+  color: var(--ink3);
+  cursor: pointer;
+  background: white;
+  text-align: center;
+  transition: all .15s;
+  user-select: none;
+  line-height: 1.3;
+}
+.schaal-btn:hover { border-color: var(--accent2); color: var(--ink2); }
+.schaal-btn.selected {
+  background: var(--accent-light);
+  border-color: var(--accent2);
+  color: var(--accent);
+  font-weight: 500;
+}
+
+/* NAVIGATIE KNOPPEN */
+.nav {
+  display: flex;
+  gap: 12px;
+  margin-top: 36px;
+  padding-top: 24px;
+  border-top: 1px solid var(--border);
+}
+.btn-primary {
+  padding: 12px 28px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s;
+}
+.btn-primary:hover { background: var(--accent2); }
+.btn-primary:disabled { background: var(--paper3); color: var(--ink3); cursor: not-allowed; }
+.btn-secondary {
+  padding: 12px 20px;
+  background: transparent;
+  color: var(--ink3);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.btn-secondary:hover { border-color: var(--ink3); color: var(--ink2); }
+
+/* LOADING */
+.loading-state {
+  display: none;
+  text-align: center;
+  padding: 80px 0;
+}
+.loading-state.active { display: block; }
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--paper3);
+  border-top-color: var(--accent2);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-state h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 22px;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+.loading-state p { color: var(--ink3); font-size: 14px; }
+.loading-dots span {
+  display: inline-block;
+  animation: bounce .8s ease infinite;
+  font-size: 20px;
+  color: var(--accent2);
+}
+.loading-dots span:nth-child(2) { animation-delay: .15s; }
+.loading-dots span:nth-child(3) { animation-delay: .30s; }
+@keyframes bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+
+/* RAPPORT */
+.rapport {
+  display: none;
+}
+.rapport.active { display: block; animation: fadeUp .3s ease; }
+
+.rapport-header {
+  background: var(--accent);
+  color: white;
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  margin-bottom: 32px;
+}
+.rapport-header .bedrijf {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  opacity: .7;
+  margin-bottom: 8px;
+}
+.rapport-header h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 26px;
+  font-weight: 400;
+  margin-bottom: 8px;
+}
+.rapport-header .datum { font-size: 13px; opacity: .7; }
+
+.rapport-intro {
+  background: var(--paper2);
+  border-left: 3px solid var(--accent2);
+  padding: 16px 20px;
+  border-radius: 0 var(--radius) var(--radius) 0;
+  font-size: 14px;
+  color: var(--ink2);
+  line-height: 1.7;
+  margin-bottom: 32px;
+}
+
+.sectie-titel {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px;
+  font-weight: 400;
+  color: var(--ink);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sectie-titel::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.kans-kaart {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 16px;
+  background: white;
+}
+.kans-kaart.prioriteit-1 { border-left: 4px solid var(--accent); }
+.kans-kaart.prioriteit-2 { border-left: 4px solid var(--accent2); }
+.kans-kaart.prioriteit-3 { border-left: 4px solid var(--paper3); }
+
+.kans-header {
+  padding: 16px 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  cursor: pointer;
+}
+.kans-header:hover { background: var(--paper2); }
+.kans-rang {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 500;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+.prioriteit-1 .kans-rang { background: var(--accent-light); color: var(--accent); }
+.prioriteit-2 .kans-rang { background: #e8f5ee; color: var(--accent2); }
+.prioriteit-3 .kans-rang { background: var(--paper2); color: var(--ink3); }
+.kans-meta { flex: 1; }
+.kans-naam {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.kans-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-weight: 500;
+}
+.badge-tijd { background: #e8f2eb; color: var(--accent); }
+.badge-moeilijk { background: var(--paper2); color: var(--ink3); }
+.badge-moeilijk.gemakkelijk { background: #e8f2eb; color: var(--accent); }
+.badge-moeilijk.middel { background: #fef3e6; color: #a05c0a; }
+.badge-moeilijk.gevorderd { background: var(--warn-light); color: var(--warn); }
+.kans-toggle { color: var(--ink3); font-size: 18px; margin-top: 2px; transition: transform .2s; }
+.kans-kaart.open .kans-toggle { transform: rotate(180deg); }
+
+.kans-body {
+  display: none;
+  padding: 0 20px 20px;
+  border-top: 1px solid var(--border);
+}
+.kans-kaart.open .kans-body { display: block; }
+
+.kans-sectie { margin-top: 14px; }
+.kans-sectie-label {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--ink3);
+  margin-bottom: 6px;
+}
+.kans-sectie p { font-size: 14px; color: var(--ink2); line-height: 1.6; }
+.tools-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.tool-pill {
+  font-size: 12px;
+  padding: 4px 10px;
+  background: var(--paper2);
+  border-radius: 6px;
+  color: var(--ink2);
+  border: 1px solid var(--border);
+}
+.tool-pill.kern { background: var(--accent-light); color: var(--accent); border-color: #b8d9c3; }
+
+.volgende-stap-box {
+  background: var(--accent-light);
+  border: 1px solid #b8d9c3;
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-top: 32px;
+}
+.volgende-stap-box h3 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px;
+  font-weight: 400;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+.volgende-stap-box p { font-size: 14px; color: var(--ink2); line-height: 1.7; }
+
+.overig-list { list-style: none; }
+.overig-list li {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 14px;
+  color: var(--ink2);
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+}
+.overig-list li::before {
+  content: '–';
+  color: var(--ink3);
+  flex-shrink: 0;
+}
+.overig-list li:last-child { border-bottom: none; }
+
+.print-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--ink3);
+  cursor: pointer;
+  margin-top: 32px;
+  transition: all .15s;
+}
+.print-btn:hover { border-color: var(--ink3); color: var(--ink2); }
+
+.opnieuw-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px;
+  color: var(--ink3);
+  cursor: pointer;
+  margin-top: 10px;
+  margin-left: 10px;
+  transition: all .15s;
+}
+.opnieuw-btn:hover { border-color: var(--ink3); color: var(--ink2); }
+
+.error-msg {
+  background: var(--warn-light);
+  border: 1px solid #f0b99a;
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  font-size: 14px;
+  color: var(--warn);
+  margin-top: 16px;
+  display: none;
+}
+.error-msg.active { display: block; }
+
+@media print {
+  .nav, .print-btn, .opnieuw-btn, .progress-wrap, .header { display: none; }
+  .kans-body { display: block !important; }
+  .kans-toggle { display: none; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+<a href="index.html" style="display:inline-flex;align-items:center;gap:6px;font-size:13px;color:#4a8c62;text-decoration:none;font-family:'DM Sans',sans-serif;margin-bottom:28px;font-weight:500;">← Terug naar overzicht</a>
+
+  <div class="header">
+    <div class="header-eyebrow">AI Automatisering Intake</div>
+    <h1>Waar kan <em>jouw</em> bedrijf slimmer werken?</h1>
+    <p>Beantwoord 5 korte secties over hoe je nu werkt. Onze AI analyseert je antwoorden en geeft je een concreet overzicht van automatiseringskansen, op maat voor jouw situatie.</p>
+  </div>
+
+  <div class="progress-wrap" id="progress-wrap">
+    <div class="progress-steps" id="progress-steps"></div>
+    <div class="progress-label">Sectie <span id="stap-label">1</span> van 6</div>
+  </div>
+
+  <!-- STAP 1: BEDRIJFSPROFIEL -->
+  <div class="stap active" id="stap-1">
+    <div class="stap-header">
+      <div class="stap-nummer">Sectie 1 — Bedrijfsprofiel</div>
+      <h2>Over jullie bedrijf</h2>
+      <p>Een kort profiel zodat de aanbevelingen aansluiten bij jullie sector en schaal.</p>
+    </div>
+
+    <div class="vraag">
+      <label>Bedrijfsnaam</label>
+      <input type="text" id="bedrijfsnaam" placeholder="bijv. Loodgietersbedrijf Janssen">
+    </div>
+
+    <div class="vraag">
+      <label>In welke sector zijn jullie actief?</label>
+      <select id="sector">
+        <option value="">— Kies een sector —</option>
+        <option value="bouw_installatie">Bouw, installatie of onderhoud</option>
+        <option value="zorg_welzijn">Zorg of welzijn</option>
+        <option value="horeca_events">Horeca of evenementen</option>
+        <option value="retail_webshop">Retail of webshop</option>
+        <option value="zakelijke_dienstverlening">Zakelijke dienstverlening (advies, bureau, coach)</option>
+        <option value="transport_logistiek">Transport of logistiek</option>
+        <option value="creatief">Creatieve sector (ontwerp, media, fotografie)</option>
+        <option value="overig">Anders</option>
+      </select>
+    </div>
+
+    <div class="vraag">
+      <label>Hoeveel mensen werken er in jullie bedrijf?</label>
+      <div class="schaal">
+        <div class="schaal-btn" data-group="medewerkers" data-val="1">Alleen ik</div>
+        <div class="schaal-btn" data-group="medewerkers" data-val="2-5">2 – 5</div>
+        <div class="schaal-btn" data-group="medewerkers" data-val="6-15">6 – 15</div>
+        <div class="schaal-btn" data-group="medewerkers" data-val="15+">Meer dan 15</div>
+      </div>
+    </div>
+
+    <div class="vraag">
+      <label>Welke software of tools gebruiken jullie nu?</label>
+      <span class="hint">Selecteer alles wat van toepassing is</span>
+      <div class="chips" id="tools-chips">
+        <div class="chip" data-group="tools" data-val="excel">Excel / Google Sheets</div>
+        <div class="chip" data-group="tools" data-val="word">Word / Google Docs</div>
+        <div class="chip" data-group="tools" data-val="boekhoud">Boekhoudpakket (Moneybird, Exact, e.d.)</div>
+        <div class="chip" data-group="tools" data-val="crm">CRM of klantenbestand</div>
+        <div class="chip" data-group="tools" data-val="planning_tool">Planningssoftware</div>
+        <div class="chip" data-group="tools" data-val="whatsapp">WhatsApp (voor zakelijk contact)</div>
+        <div class="chip" data-group="tools" data-val="geen">Geen specifieke tools</div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button class="btn-primary" onclick="volgende(1)">Volgende →</button>
+    </div>
+  </div>
+
+  <!-- STAP 2: ADMINISTRATIE -->
+  <div class="stap" id="stap-2">
+    <div class="stap-header">
+      <div class="stap-nummer">Sectie 2 — Administratie & financiën</div>
+      <h2>Het papierwerk</h2>
+      <p>Offertes, facturen, bonnetjes — alles wat je doet maar liever niet doet.</p>
+    </div>
+
+    <div class="vraag">
+      <label>Hoeveel uur per week ben je kwijt aan offertes en facturen samen?</label>
+      <div class="schaal">
+        <div class="schaal-btn" data-group="uur_admin" data-val="minder_1">Minder dan 1 uur</div>
+        <div class="schaal-btn" data-group="uur_admin" data-val="1-3">1 – 3 uur</div>
+        <div class="schaal-btn" data-group="uur_admin" data-val="3-6">3 – 6 uur</div>
+        <div class="schaal-btn" data-group="uur_admin" data-val="meer_6">Meer dan 6 uur</div>
+      </div>
+    </div>
+
+    <div class="vraag">
+      <label>Hoe maak je op dit moment offertes?</label>
+      <div class="chips">
+        <div class="chip" data-group="offerte_manier" data-val="handmatig">Volledig handmatig typen</div>
+        <div class="chip" data-group="offerte_manier" data-val="template">Via een vaste template (Word/Excel)</div>
+        <div class="chip" data-group="offerte_manier" data-val="software">Via offertes-software</div>
+        <div class="chip" data-group="offerte_manier" data-val="geen_offertes">Ik maak geen offertes</div>
+      </div>
+    </div>
+
+    <div class="vraag">
+      <label>Hoe verwerk je inkomende facturen van leveranciers?</label>
+      <div class="chips">
+        <div class="chip" data-group="factuur_verwerking" data-val="handmatig">Ik typ alles handmatig over</div>
+        <div class="chip" data-group="factuur_verwerking" data-val="upload">Ik upload ze naar een boekhoudpakket</div>
+        <div class="chip" data-group="factuur_verwerking" data-val="boekhouder">Mijn boekhouder doet dat</div>
+        <div class="chip" data-group="factuur_verwerking" data-val="weinig">Ik heb weinig inkomende facturen</div>
+      </div>
+    </div>
+
+    <div class="vraag">
+      <label>Wat is het grootste knelpunt in je administratie?</label>
+      <span class="hint">Schrijf gerust in eigen woorden</span>
+      <textarea id="admin_knelpunt" placeholder="bijv. 'Ik vergeet altijd op te volgen na een offerte' of 'Bonnetjes verwerken kost me elke maand uren'"></textarea>
+    </div>
+
+    <div class="nav">
+      <button class="btn-secondary" onclick="vorige(2)">← Terug</button>
+      <button class="btn-primary" onclick="volgende(2)">Volgende →</button>
+    </div>
+  </div>
+
+  <!-- STAP 3: COMMUNICATIE -->
+  <div class="stap" id="stap-3">
+    <div class="stap-header">
+      <div class="stap-nummer">Sectie 3 — Communicatie & klantcontact</div>
+      <h2>Hoe communiceer je met klanten?</h2>
+      <p>E-mail, telefoon, WhatsApp — en hoeveel tijd dat kost.</p>
+    </div>
+
+    <div class="vraag">
+      <label>Via welke kanalen nemen klanten contact met je op?</label>
+      <span class="hint">Selecteer alles wat geldt</span>
+      <div class="chips">
+        <div class="chip" data-group="kanalen" data-val="email">E-mail</div>
+        <div class="chip" data-group="kanalen" data-val="telefoon">Telefoon</div>
+        <div class="chip" data-group="kanalen" data-val="whatsapp">WhatsApp</div>
+        <div class="chip" data-group="kanalen" data-val="website">Contactformulier op website</div>
+        <div class="chip" data-group="kanalen" data-val="social">Social media</div>
+        <div class="chip" data-group="kanalen" data-val="persoonlijk">Persoonlijk / aan de deur</div>
+      </div>
+    </div>
+
+    <div class="vraag">
+      <label>Hoeveel tijd besteed je dagelijks aan het beantwoorden van klantvragen?</label>
+      <div class="schaal">
+        <div class="schaal-btn" data-group="tijd_communicatie" data-val="kort">Minder dan 30 min</div>
+        <div class="schaal-btn" data-group="tijd_communicatie" data-val="middel">30 – 60 min</div>
+        <div class="schaal-btn" data-group="tijd_communicatie" data-val="lang">1 – 2 uur</div>
+        <div class="schaal-btn" data-group="tijd_communicatie" data-val="veel">Meer dan 2 uur</div>
+      </div>
+    </div>
+
+    <div class="vraag">
+      <label>Mis je weleens leads of vergeet je op te volgen na een eerste contact?</label>
+      <div class="schaal">
+        <div class="schaal-btn" data-group="missedleads" data-val="nooit">Nooit</div>
+        <div class="schaal-btn" data-group="missedleads" data-val="soms">Soms</div>
+        <div class="schaal-btn" data-group="missedleads" data-val="regelmatig">Regelmatig</div>
+        <div class="schaal-btn" data-group="missedleads" data-val="ja_probleem">Ja, dit is een echt probleem</div>
+      </div>
+    </div>
+
+    <div class="vraag">
+      <label>Welke vragen krijg je het meest van klanten?</label>
+      <span class="hint">Omschrijf de meest herhaalde vragen</span>
+      <textarea id="veelgestelde_vragen" placeholder="bijv. 'Wat zijn jullie tarieven?', 'Zijn jullie beschikbaar op datum X?', 'Hoe lang duurt het?'"></textarea>
+    </div>
+
+    <div class="nav">
+      <button class="btn-secondary" onclick="vorige(3)">← Terug</button>
+      <button class="btn-primary" onclick="volgende(3)">Volgende →</button>
+    </div>
+  </div>
+
+  <!-- STAP 4: PLANNING -->
+  <div class="stap" id="stap-4">
+    <div class="stap-header">
+      <div class="stap-nummer">Sectie 4 — Planning & werkorganisatie</div>
+      <h2>Hoe organiseer je je werk?</h2>
+      <p>Afspraken inplannen, taken verdelen, medewerkers coördineren.</p>
+    </div>
+
+    <div class="vraag">
+      <label>Hoe plan je je werk en afspraken op dit moment?</label>
+      <div class="chips">
+        <div class="chip" data-group="planning_manier" data-val="hoofd">Uit mijn hoofd / notities</div>
+        <div class="chip" data-group="planning_manier" data-val="papier">Papieren agenda</div>
+        <div class="chip" data-group="planning_manier" data-val="google_cal">Google Calendar of Outlook</div>
+        <div class="chip" data-group="planning_manier" data-val="excel">Excel of spreadsheet</div>
+        <div class="chip" data-group="planning_manier" data-val="planningssoftware">Planningssoftware</div>
+      </div>
+    </div>
+
+    <div class="vraag">
+      <label>Hoe maken klanten een afspraak met je?</label>
+      <div class="chips">
+        <div class="chip" data-group="afspraken_maken" data-val="telefoon">Via telefoon of appje</div>
+        <div class="chip" data-group="afspraken_maken" data-val="email_heen_weer">Heen en weer e-mailen</div>
+        <div class="chip" data-group="afspraken_maken" data-val="boekingspagina">Via een online boekingspagina</div>
+        <div class="chip" data-group="afspraken_maken" data-val="geen_afspraken">Niet van toepassing</div>
+      </div>
+    </div>
+
+    <div class="vraag">
+      <label>Heb je last van no-shows of afzeggingen op het laatste moment?</label>
+      <div class="schaal">
+        <div class="schaal-btn" data-group="noshows" data-val="nee">Nauwelijks</div>
+        <div class="schaal-btn" data-group="noshows" data-val="soms">Soms</div>
+        <div class="schaal-btn" data-group="noshows" data-val="regelmatig">Regelmatig</div>
+        <div class="schaal-btn" data-group="noshows" data-val="groot_probleem">Dit kost me echt omzet</div>
+      </div>
+    </div>
+
+    <div class="vraag">
+      <label>Wat is je grootste frustratie als het gaat om plannen en organiseren?</label>
+      <textarea id="planning_frustratie" placeholder="bijv. 'Ik ben elke maandagochtend een uur kwijt aan het inplannen van de week' of 'Medewerkers weten niet altijd wat ze moeten doen'"></textarea>
+    </div>
+
+    <div class="nav">
+      <button class="btn-secondary" onclick="vorige(4)">← Terug</button>
+      <button class="btn-primary" onclick="volgende(4)">Volgende →</button>
+    </div>
+  </div>
+
+  <!-- STAP 5: MARKETING -->
+  <div class="stap" id="stap-5">
+    <div class="stap-header">
+      <div class="stap-nummer">Sectie 5 — Marketing & online zichtbaarheid</div>
+      <h2>Hoe vinden nieuwe klanten jullie?</h2>
+      <p>Social media, reviews, nieuwsbrief — en hoeveel aandacht dat krijgt.</p>
+    </div>
+
+    <div class="vraag">
+      <label>Ben je actief op social media voor je bedrijf?</label>
+      <div class="schaal">
+        <div class="schaal-btn" data-group="social_actief" data-val="nee">Nee</div>
+        <div class="schaal-btn" data-group="social_actief" data-val="weinig">Zelden</div>
+        <div class="schaal-btn" data-group="social_actief" data-val="maandelijks">Maandelijks</div>
+        <div class="schaal-btn" data-group="social_actief" data-val="wekelijks">Wekelijks of vaker</div>
+      </div>
+    </div>
+
+    <div class="vraag">
+      <label>Vraag je klanten om een online review achter te laten?</label>
+      <div class="schaal">
+        <div class="schaal-btn" data-group="reviews" data-val="nee">Nee, nooit</div>
+        <div class="schaal-btn" data-group="reviews" data-val="soms">Soms, maar vergeet het</div>
+        <div class="schaal-btn" data-group="reviews" data-val="altijd">Ja, altijd</div>
+      </div>
+    </div>
+
+    <div class="vraag">
+      <label>Heb je een klantenlijst of nieuwsbrief?</label>
+      <div class="chips">
+        <div class="chip" data-group="nieuwsbrief" data-val="geen">Nee</div>
+        <div class="chip" data-group="nieuwsbrief" data-val="lijst_wel">Ik heb een lijst maar doe er niks mee</div>
+        <div class="chip" data-group="nieuwsbrief" data-val="af_en_toe">Ik stuur af en toe iets</div>
+        <div class="chip" data-group="nieuwsbrief" data-val="regelmatig">Ik heb een actieve nieuwsbrief</div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button class="btn-secondary" onclick="vorige(5)">← Terug</button>
+      <button class="btn-primary" onclick="volgende(5)">Volgende →</button>
+    </div>
+  </div>
+
+  <!-- STAP 6: PIJNPUNTEN -->
+  <div class="stap" id="stap-6">
+    <div class="stap-header">
+      <div class="stap-nummer">Sectie 6 — Pijnpunten & prioriteiten</div>
+      <h2>Wat wil je zelf het liefst oplossen?</h2>
+      <p>De meest waardevolle vragen van de hele intake.</p>
+    </div>
+
+    <div class="vraag">
+      <label>Als je één ding automatisch kon laten gaan, wat zou dat zijn?</label>
+      <span class="hint">Wees zo concreet mogelijk</span>
+      <textarea id="eerste_wens" placeholder="bijv. 'Dat ik elke ochtend een overzicht krijg van wat ik die dag moet doen' of 'Dat offertes zichzelf schrijven als ik een klus opneem'"></textarea>
+    </div>
+
+    <div class="vraag">
+      <label>Waar verlies je de meeste tijd aan werk dat je liever niet doet?</label>
+      <textarea id="tijdveters" placeholder="bijv. 'Klantvragen beantwoorden die steeds hetzelfde zijn', 'Afspraken inplannen via WhatsApp heen-en-weer'"></textarea>
+    </div>
+
+    <div class="vraag">
+      <label>Welk budget past bij jullie als het gaat om automatisering?</label>
+      <span class="hint">Dit helpt ons de juiste tools te adviseren</span>
+      <div class="schaal">
+        <div class="schaal-btn" data-group="budget" data-val="klein">Tot €100/mnd</div>
+        <div class="schaal-btn" data-group="budget" data-val="middel">€100 – €300/mnd</div>
+        <div class="schaal-btn" data-group="budget" data-val="groot">€300 – €800/mnd</div>
+        <div class="schaal-btn" data-group="budget" data-val="eenmalig">Liever eenmalige investering</div>
+      </div>
+    </div>
+
+    <div class="nav">
+      <button class="btn-secondary" onclick="vorige(6)">← Terug</button>
+      <button class="btn-primary" id="analyseer-btn" onclick="analyseer()">Analyseren →</button>
+    </div>
+
+    <div class="error-msg" id="error-msg">
+      Er is iets misgegaan bij het analyseren. Controleer je internetverbinding en probeer opnieuw.
+    </div>
+  </div>
+
+  <!-- LOADING -->
+  <div class="loading-state" id="loading">
+    <div class="loading-spinner"></div>
+    <h3>Jouw scan wordt opgesteld…</h3>
+    <p>We analyseren de antwoorden en zoeken de beste automatiseringskansen.</p>
+    <div class="loading-dots" style="margin-top:20px">
+      <span>.</span><span>.</span><span>.</span>
+    </div>
+  </div>
+
+  <!-- RAPPORT -->
+  <div class="rapport" id="rapport">
+    <div class="rapport-header">
+      <div class="bedrijf" id="rapport-bedrijf"></div>
+      <h2>Automatisering Scan — Resultaten</h2>
+      <div class="datum" id="rapport-datum"></div>
+    </div>
+
+    <div class="rapport-intro" id="rapport-intro"></div>
+
+    <div class="sectie-titel">Top kansen</div>
+    <div id="kansen-container"></div>
+
+    <div id="overig-sectie" style="margin-top:32px; display:none">
+      <div class="sectie-titel">Meer mogelijkheden</div>
+      <ul class="overig-list" id="overig-container"></ul>
+    </div>
+
+    <div class="volgende-stap-box" id="volgende-stap-box">
+      <h3>Aanbevolen eerste stap</h3>
+      <p id="volgende-stap-tekst"></p>
+    </div>
+
+    <div>
+      <button class="print-btn" onclick="window.print()">
+        &#x2399; Rapport afdrukken of opslaan als PDF
+      </button>
+      <button class="opnieuw-btn" onclick="opnieuw()">
+        ↺ Nieuwe intake starten
+      </button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const STAPPEN = 6;
+const data = {};
+let huidigStap = 1;
+
+function initProgress() {
+  const wrap = document.getElementById('progress-steps');
+  wrap.innerHTML = '';
+  for (let i = 1; i <= STAPPEN; i++) {
+    const el = document.createElement('div');
+    el.className = 'progress-step' + (i < huidigStap ? ' done' : i === huidigStap ? ' active' : '');
+    wrap.appendChild(el);
+  }
+  document.getElementById('stap-label').textContent = huidigStap;
+}
+
+function volgende(van) {
+  huidigStap = van + 1;
+  document.getElementById('stap-' + van).classList.remove('active');
+  if (huidigStap <= STAPPEN) {
+    document.getElementById('stap-' + huidigStap).classList.add('active');
+    initProgress();
+  }
+  window.scrollTo(0, 0);
+}
+
+function vorige(van) {
+  huidigStap = van - 1;
+  document.getElementById('stap-' + van).classList.remove('active');
+  document.getElementById('stap-' + huidigStap).classList.add('active');
+  initProgress();
+  window.scrollTo(0, 0);
+}
+
+document.querySelectorAll('.schaal-btn').forEach(btn => {
+  btn.addEventListener('click', function() {
+    const g = this.dataset.group;
+    document.querySelectorAll('.schaal-btn[data-group="' + g + '"]').forEach(b => b.classList.remove('selected'));
+    this.classList.add('selected');
+    data[g] = this.dataset.val;
+  });
+});
+
+document.querySelectorAll('.chip').forEach(chip => {
+  chip.addEventListener('click', function() {
+    const g = this.dataset.group;
+    const isMulti = ['tools', 'kanalen'].includes(g);
+    if (isMulti) {
+      this.classList.toggle('selected');
+      if (!data[g]) data[g] = [];
+      const v = this.dataset.val;
+      if (this.classList.contains('selected')) {
+        if (!data[g].includes(v)) data[g].push(v);
+      } else {
+        data[g] = data[g].filter(x => x !== v);
+      }
+    } else {
+      document.querySelectorAll('.chip[data-group="' + g + '"]').forEach(b => b.classList.remove('selected'));
+      this.classList.add('selected');
+      data[g] = this.dataset.val;
+    }
+  });
+});
+
+function verzamelData() {
+  data.bedrijfsnaam = document.getElementById('bedrijfsnaam').value || 'Onbekend bedrijf';
+  data.sector = document.getElementById('sector').value;
+  data.admin_knelpunt = document.getElementById('admin_knelpunt').value;
+  data.veelgestelde_vragen = document.getElementById('veelgestelde_vragen').value;
+  data.planning_frustratie = document.getElementById('planning_frustratie').value;
+  data.eerste_wens = document.getElementById('eerste_wens').value;
+  data.tijdveters = document.getElementById('tijdveters').value;
+}
+
+async function analyseer() {
+  verzamelData();
+  document.getElementById('stap-6').classList.remove('active');
+  document.getElementById('progress-wrap').style.display = 'none';
+  document.getElementById('loading').classList.add('active');
+  document.getElementById('error-msg').classList.remove('active');
+  window.scrollTo(0, 0);
+
+  const prompt = `Je bent een automatiserings-consultant die kleine en middelgrote bedrijven helpt met AI en procesautomatisering.
+
+Een bedrijf heeft de volgende intake ingevuld:
+
+BEDRIJFSPROFIEL:
+- Naam: ${data.bedrijfsnaam}
+- Sector: ${data.sector}
+- Medewerkers: ${data.medewerkers || 'niet ingevuld'}
+- Huidige tools: ${(data.tools || []).join(', ') || 'geen'}
+
+ADMINISTRATIE:
+- Uren per week aan admin: ${data.uur_admin || 'onbekend'}
+- Offertes maken: ${data.offerte_manier || 'onbekend'}
+- Factuurverwerking: ${data.factuur_verwerking || 'onbekend'}
+- Knelpunt admin: ${data.admin_knelpunt || 'niet ingevuld'}
+
+COMMUNICATIE:
+- Kanalen: ${(data.kanalen || []).join(', ') || 'niet ingevuld'}
+- Tijd per dag aan klantvragen: ${data.tijd_communicatie || 'onbekend'}
+- Missed leads: ${data.missedleads || 'onbekend'}
+- Meest gestelde vragen: ${data.veelgestelde_vragen || 'niet ingevuld'}
+
+PLANNING:
+- Hoe ze plannen: ${data.planning_manier || 'onbekend'}
+- Afspraken maken: ${data.afspraken_maken || 'onbekend'}
+- No-shows: ${data.noshows || 'onbekend'}
+- Frustratie planning: ${data.planning_frustratie || 'niet ingevuld'}
+
+MARKETING:
+- Social media activiteit: ${data.social_actief || 'onbekend'}
+- Reviews vragen: ${data.reviews || 'onbekend'}
+- Nieuwsbrief: ${data.nieuwsbrief || 'onbekend'}
+
+PIJNPUNTEN:
+- Grootste wens: ${data.eerste_wens || 'niet ingevuld'}
+- Tijdvreters: ${data.tijdveters || 'niet ingevuld'}
+- Budget: ${data.budget || 'onbekend'}
+
+Geef een analyse terug als JSON met dit exacte formaat:
+{
+  "samenvatting": "2-3 zinnen persoonlijke samenvatting van wat je ziet in dit bedrijf qua automatiseringspotentieel",
+  "kansen": [
+    {
+      "naam": "korte naam van de automatisering",
+      "prioriteit": 1,
+      "tijdsbesparing": "bijv. 3-5 uur per week",
+      "complexiteit": "gemakkelijk",
+      "probleem": "wat het probleem is dat we oplossen, 1-2 zinnen",
+      "oplossing": "wat je precies bouwt en hoe het werkt, 2-3 zinnen concreet",
+      "tools": ["tool1", "tool2"],
+      "kerntools": ["tool1"],
+      "eerste_actie": "één concrete eerste stap om dit te starten"
+    }
+  ],
+  "overige_kansen": ["korte omschrijving kans 1", "korte omschrijving kans 2"],
+  "aanbevolen_eerste_stap": "Concrete aanbeveling wat het bedrijf morgen kan doen om te beginnen"
+}
+
+Regels:
+- Geef 3 tot 5 kansen, gesorteerd op prioriteit (1 = hoogste)
+- Complexiteit is altijd één van: "gemakkelijk", "middel", "gevorderd"
+- Tools zijn echte toolnamen (Make.com, n8n, Claude API, Calendly, Moneybird, etc.)
+- Kerntools zijn de 1-2 tools die het meest centraal staan
+- Wees concreet en praktisch, geen vage adviezen
+- Stem de aanbevelingen af op het budget dat is opgegeven
+- Geef 2-4 overige kansen als korte string
+- Geef ALLEEN de JSON terug, geen uitleg, geen markdown backticks`;
+
+  try {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 4000,
+        messages: [{ role: 'user', content: prompt }]
+      })
+    });
+
+    if (!response.ok) {
+      const errBody = await response.text();
+      throw new Error('API fout ' + response.status + ': ' + errBody);
+    }
+
+    const result = await response.json();
+    const tekst = result.content[0].text.trim().replace(/^```json\n?/, '').replace(/\n?```$/, '').trim();
+    const analyse = JSON.parse(tekst);
+    toonRapport(analyse);
+  } catch (e) {
+    console.error('Analyse fout:', e);
+    document.getElementById('loading').classList.remove('active');
+    document.getElementById('stap-6').classList.add('active');
+    document.getElementById('progress-wrap').style.display = 'block';
+    huidigStap = 6;
+    initProgress();
+    const errEl = document.getElementById('error-msg');
+    errEl.textContent = 'Er is iets misgegaan: ' + e.message;
+    errEl.classList.add('active');
+  }
+}
+
+function toonRapport(analyse) {
+  document.getElementById('loading').classList.remove('active');
+
+  document.getElementById('rapport-bedrijf').textContent = data.bedrijfsnaam || 'Jouw bedrijf';
+  document.getElementById('rapport-datum').textContent = new Date().toLocaleDateString('nl-NL', { day: 'numeric', month: 'long', year: 'numeric' });
+  document.getElementById('rapport-intro').textContent = analyse.samenvatting;
+
+  const container = document.getElementById('kansen-container');
+  container.innerHTML = '';
+
+  const complexBadge = { gemakkelijk: 'gemakkelijk', middel: 'middel', gevorderd: 'gevorderd' };
+
+  (analyse.kansen || []).forEach((k, i) => {
+    const kaart = document.createElement('div');
+    kaart.className = 'kans-kaart prioriteit-' + Math.min(k.prioriteit, 3);
+
+    const kernSet = new Set(k.kerntools || []);
+
+    const toolsHtml = (k.tools || []).map(t =>
+      `<span class="tool-pill${kernSet.has(t) ? ' kern' : ''}">${t}</span>`
+    ).join('');
+
+    const complexClass = k.complexiteit === 'gemakkelijk' ? 'gemakkelijk' : k.complexiteit === 'gevorderd' ? 'gevorderd' : 'middel';
+
+    kaart.innerHTML = `
+      <div class="kans-header" onclick="toggleKans(this)">
+        <div class="kans-rang">${k.prioriteit}</div>
+        <div class="kans-meta">
+          <div class="kans-naam">${k.naam}</div>
+          <div class="kans-badges">
+            <span class="badge badge-tijd">${k.tijdsbesparing}</span>
+            <span class="badge badge-moeilijk ${complexClass}">${k.complexiteit}</span>
+          </div>
+        </div>
+        <div class="kans-toggle">&#x2303;</div>
+      </div>
+      <div class="kans-body">
+        <div class="kans-sectie">
+          <div class="kans-sectie-label">Het probleem</div>
+          <p>${k.probleem}</p>
+        </div>
+        <div class="kans-sectie">
+          <div class="kans-sectie-label">De oplossing</div>
+          <p>${k.oplossing}</p>
+        </div>
+        <div class="kans-sectie">
+          <div class="kans-sectie-label">Tools</div>
+          <div class="tools-list">${toolsHtml}</div>
+        </div>
+        <div class="kans-sectie">
+          <div class="kans-sectie-label">Eerste concrete stap</div>
+          <p>${k.eerste_actie}</p>
+        </div>
+      </div>
+    `;
+
+    if (i === 0) kaart.classList.add('open');
+    container.appendChild(kaart);
+  });
+
+  const overig = analyse.overige_kansen || [];
+  if (overig.length > 0) {
+    const overigSectie = document.getElementById('overig-sectie');
+    const overigContainer = document.getElementById('overig-container');
+    overigContainer.innerHTML = overig.map(k => `<li>${k}</li>`).join('');
+    overigSectie.style.display = 'block';
+  }
+
+  document.getElementById('volgende-stap-tekst').textContent = analyse.aanbevolen_eerste_stap;
+  document.getElementById('rapport').classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function toggleKans(header) {
+  const kaart = header.closest('.kans-kaart');
+  kaart.classList.toggle('open');
+}
+
+function opnieuw() {
+  location.reload();
+}
+
+initProgress();
+</script>
+</body>
+</html>
